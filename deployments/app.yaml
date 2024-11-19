@@ -1,0 +1,76 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ica2-backend
+  namespace: ica2-backend
+data:
+  # property-like keys; each key maps to a simple value
+  PGDB_HOST: 'db.ica2-db.svc.cluster.local'
+  REDIS_HOST: 'redis.ica2-redis.svc.cluster.local'
+  PGDB_USER: admin
+  PGDB_NAME: admin
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: backend
+  name: backend
+  namespace: ica2-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - image: gcr.io/black-journal-436122-b5/ica2-backend:v2
+        name: ica2-backend
+        env:
+        - name: PGDB_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ica2-backend
+              key: PGDB_HOST
+        - name: PGDB_USER
+          valueFrom:
+            configMapKeyRef:
+              name: ica2-backend
+              key: PGDB_USER
+        - name: PGDB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: ica2-backend
+              key: PGDB_PASSWORD
+        - name: PGDB_NAME
+          valueFrom:
+            configMapKeyRef:
+              name: ica2-backend
+              key: PGDB_NAME
+        - name: REDIS_HOST
+          valueFrom:
+            configMapKeyRef:
+              name: ica2-backend
+              key: REDIS_HOST
+        ports:
+        - containerPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: backend
+  name: backend
+  namespace: ica2-backend
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5000
+  type: LoadBalancer
+  selector:
+    app: backend

@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ica2-backend
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ica2-db
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ica2-redis
